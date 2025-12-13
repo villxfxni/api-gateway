@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\TrazabilidadController;
 use App\Http\Controllers\RegistroController;
+use App\Http\Controllers\LogisticaPaquetesProxyController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -17,7 +18,12 @@ Route::prefix('gateway')->group(function () {
     Route::get(
     '/registro/ci/{ci}',
     [RegistroController::class, 'getSimplePersonaByCi']
-);
-
+    );
+    Route::prefix('logistica')->group(function () {
+        Route::get('paquetes/pendientes', [LogisticaPaquetesProxyController::class, 'pendientes']);
+        Route::patch('paquetes/{id}/armar', [LogisticaPaquetesProxyController::class, 'armar'])
+            ->whereNumber('id');
+        Route::get('paquetes/destino-voluntario/{codigo}', [LogisticaPaquetesProxyController::class, 'destinoVoluntario']);
+    });
 });
 
