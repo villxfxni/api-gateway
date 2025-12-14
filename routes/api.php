@@ -5,7 +5,8 @@ use App\Http\Controllers\RegistroController;
 use App\Http\Controllers\LogisticaPaquetesProxyController;
 use App\Http\Controllers\DonacionesInventarioProxyController;
 use App\Http\Controllers\RescateReleasesProxyController;
-
+use App\Http\Controllers\BrigadasHotspotController;
+use App\Http\Controllers\PrediccionesController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -36,6 +37,16 @@ Route::prefix('gateway')->group(function () {
     });
      Route::prefix('animales')->group(function () {
         Route::get('releases', [RescateReleasesProxyController::class, 'animalesReleases']);
+        Route::post('reports', [RescateReleasesProxyController::class, 'reporteRapido']);
+    });
+
+    Route::prefix('brigadas')->group(function () {
+        Route::get('hotspots', [BrigadasHotspotController::class, 'hotspots']);
+        Route::get('reportesanimales', [BrigadasHotspotController::class, 'reportesAnimales']);
+    });
+    Route::prefix('prediccion')->group(function () {
+        Route::get('weather', [PrediccionesController::class, 'weather']);
+        Route::get('lookup', [PrediccionesController::class, 'lookup']);
     });
 });
 

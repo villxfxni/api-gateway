@@ -7,24 +7,25 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-class RescateReleasesProxyController extends Controller
+class BrigadasHotspotController extends Controller
 {
     /**
-     * GET /api/gateway/animales/releases
-     * Proxy a MS Donaciones: GET /api/releases
+     * GET /api/gateway/brigadas/hotspots
+
+     * Proxy a MS Donaciones: GET /api/v1/hotspots/live
      */
-    public function animalesReleases(Request $request)
+    public function hotspots(Request $request)
     {
-        $baseUrl = rtrim(env('MS_ANIMALES_URL', ''), '/');
+        $baseUrl = rtrim(env('MS_BRIGADAS_URL', ''), '/');
 
         if (!$baseUrl) {
             return response()->json([
                 'success' => false,
-                'error'   => 'MS_ANIMALES_URL no está configurado',
+                'error'   => 'MS_BRIGADAS_URL no está configurado',
             ], 500);
         }
 
-        $targetUrl = $baseUrl . '/api/releases';
+        $targetUrl = $baseUrl . '/api/v1/hotspots/live';
         $started   = microtime(true);
 
         try {
@@ -32,32 +33,32 @@ class RescateReleasesProxyController extends Controller
                 ->withHeaders($this->forwardedHeaders($request))
                 ->get($targetUrl, $request->query());
 
-            $this->storeLog('releases_de_animales', $request, $response, $targetUrl, $started);
+            $this->storeLog('hotspots', $request, $response, $targetUrl, $started);
 
             return response($response->body(), $response->status())
                 ->header('Content-Type', $response->header('Content-Type', 'application/json'));
 
         } catch (\Throwable $e) {
-            $this->storeException('releases_de_animales', $request, $e, $targetUrl, $started);
+            $this->storeException('hotspots', $request, $e, $targetUrl, $started);
 
             return response()->json([
                 'success' => false,
-                'error'   => 'Error al llamar a Rescate de Animales',
+                'error'   => 'Error al llamar a Brigadas',
             ], 502);
         }
     }
-    public function especies(Request $request)
+    public function reportesAnimales(Request $request)
     {
-        $baseUrl = rtrim(env('MS_ANIMALES_URL', ''), '/');
+        $baseUrl = rtrim(env('MS_BRIGADAS_URL', ''), '/');
 
         if (!$baseUrl) {
             return response()->json([
                 'success' => false,
-                'error'   => 'MS_ANIMALES_URL no está configurado',
+                'error'   => 'MS_BRIGADAS_URL no está configurado',
             ], 500);
         }
 
-        $targetUrl = $baseUrl . '/api/species';
+        $targetUrl = $baseUrl . '/api/v1/reportes-rescate-animales';
         $started   = microtime(true);
 
         try {
@@ -65,54 +66,21 @@ class RescateReleasesProxyController extends Controller
                 ->withHeaders($this->forwardedHeaders($request))
                 ->get($targetUrl, $request->query());
 
-            $this->storeLog('especies', $request, $response, $targetUrl, $started);
+            $this->storeLog('reportes-para-brigadas', $request, $response, $targetUrl, $started);
 
             return response($response->body(), $response->status())
                 ->header('Content-Type', $response->header('Content-Type', 'application/json'));
 
         } catch (\Throwable $e) {
-            $this->storeException('especies', $request, $e, $targetUrl, $started);
+            $this->storeException('reportes-para-brigadas', $request, $e, $targetUrl, $started);
 
             return response()->json([
                 'success' => false,
-                'error'   => 'Error al llamar a Rescate de Animales',
+                'error'   => 'Error al llamar a Brigadas',
             ], 502);
         }
     }
-    public function reporteRapido(Request $request)
-    {
-        $baseUrl = rtrim(env('MS_ANIMALES_URL', ''), '/');
-
-        if (!$baseUrl) {
-            return response()->json([
-                'success' => false,
-                'error'   => 'MS_ANIMALES_URL no está configurado',
-            ], 500);
-        }
-
-        $targetUrl = $baseUrl . "/api/reports";
-        $started   = microtime(true);
-
-        try {
-            $response = Http::timeout(10)
-                ->withHeaders($this->forwardedHeaders($request))
-                ->post($targetUrl, $request->all());
-
-            $this->storeLog('reporteRapido', $request, $response, $targetUrl, $started);
-
-            return response($response->body(), $response->status())
-                ->header('Content-Type', $response->header('Content-Type', 'application/json'));
-
-        } catch (\Throwable $e) {
-            $this->storeException('reporteRapido', $request, $e, $targetUrl, $started);
-
-            return response()->json([
-                'success' => false,
-                'error'   => 'Error al llamar a Animales',
-            ], 502);
-        }
-    }
-
+   
     protected function forwardedHeaders(Request $request): array
     {
         $headers = [
@@ -150,13 +118,13 @@ class RescateReleasesProxyController extends Controller
             'duration_ms' => $durationMs,
         ];
 
-        $cacheKey = "gateway:animales:releases:{$operation}";
+        $cacheKey = "gateway:brigadas:releases:{$operation}";
         $logs     = Cache::get($cacheKey, []);
 
         $logs[] = $entry;
         Cache::put($cacheKey, $logs, now()->addDay());
 
-        Log::info('Gateway Animales releases proxy', $entry);
+        Log::info('Gateway Brigadas releases proxy', $entry);
     }
 
     protected function storeException(
@@ -180,12 +148,12 @@ class RescateReleasesProxyController extends Controller
             'duration_ms' => $durationMs,
         ];
 
-        $cacheKey = "gateway:animales:releases:{$operation}";
+        $cacheKey = "gateway:brigadas:releases:{$operation}";
         $logs     = Cache::get($cacheKey, []);
         $logs[]   = $entry;
 
         Cache::put($cacheKey, $logs, now()->addDay());
 
-        Log::error('Gateway Animales releases proxy error', $entry);
+        Log::error('Gateway Brigadas releases proxy error', $entry);
     }
 }

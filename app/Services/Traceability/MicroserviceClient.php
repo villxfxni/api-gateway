@@ -13,7 +13,7 @@ class MicroserviceClient
         'brigadas'   => 'MS_BRIGADAS_URL', 
         'voluntarios_post' => 'MS_VOLUNTARIOS_POST_URL',
         'animales'   => 'MS_ANIMALES_URL',
-        'prediccion' => 'MS_PREDICCION_URL',
+        'prediccion' => 'MS_PREDICCIONES_URL',
     ];
 
     public function __construct(?string $ci = null)
