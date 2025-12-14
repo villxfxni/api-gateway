@@ -27,6 +27,7 @@ Route::prefix('gateway')->group(function () {
         Route::patch('paquetes/{id}/armar', [LogisticaPaquetesProxyController::class, 'armar'])
             ->whereNumber('id');
         Route::get('paquetes/destino-voluntario/{codigo}', [LogisticaPaquetesProxyController::class, 'destinoVoluntario']);
+        Route::post('paquetes/solicitud-publica', [LogisticaPaquetesProxyController::class, 'solicitudBrigadas']);
     });
 
     Route::prefix('donaciones')->group(function () {

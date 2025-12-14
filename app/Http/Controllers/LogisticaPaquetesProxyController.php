@@ -86,6 +86,39 @@ class LogisticaPaquetesProxyController extends Controller
         }
     }
 
+    public function solicitudBrigadas(Request $request)
+    {
+        $baseUrl = rtrim(env('MS_LOGISTICA_URL', ''), '/');
+
+        if (!$baseUrl) {
+            return response()->json([
+                'success' => false,
+                'error'   => 'MS_LOGISTICA_URL no está configurado',
+            ], 500);
+        }
+
+        $targetUrl = $baseUrl . "/api/solicitud-publica";
+        $started   = microtime(true);
+
+        try {
+            $response = Http::timeout(10)
+                ->withHeaders($this->forwardedHeaders($request))
+                ->post($targetUrl, $request->all());
+
+            $this->storeLog('solicitudBrigadas', $request, $response, $targetUrl, $started);
+
+            return response($response->body(), $response->status())
+                ->header('Content-Type', $response->header('Content-Type', 'application/json'));
+
+        } catch (\Throwable $e) {
+            $this->storeException('solicitudBrigadas', $request, $e, $targetUrl, $started);
+
+            return response()->json([
+                'success' => false,
+                'error'   => 'Error al llamar a Logística',
+            ], 502);
+        }
+    }
 
     public function destinoVoluntario(Request $request, string $codigo)
     {
