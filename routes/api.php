@@ -18,10 +18,11 @@ Route::prefix('gateway')->group(function () {
 
     Route::get('trazabilidad/animales/especie/{especie}', [TrazabilidadController::class, 'getAnimalesPorEspecie']);
     Route::get('trazabilidad/animales/liberados', [TrazabilidadController::class, 'getAnimalesLiberados']);
-    Route::get(
-    '/registro/ci/{ci}',
-    [RegistroController::class, 'getSimplePersonaByCi']
-    );
+    Route::get('/registro/ci/{ci}',[RegistroController::class, 'getSimplePersonaByCi']);
+    Route::get('/listado/codigos', [LogisticaPaquetesProxyController::class, 'codigosSolicitud']);
+    Route::get('/listado/placas', [LogisticaPaquetesProxyController::class, 'vehiculos']);
+    Route::get('/listado/especies', [RescateReleasesProxyController::class, 'especies']);
+
     Route::prefix('logistica')->group(function () {
         Route::get('paquetes/pendientes', [LogisticaPaquetesProxyController::class, 'pendientes']);
         Route::patch('paquetes/{id}/armar', [LogisticaPaquetesProxyController::class, 'armar'])

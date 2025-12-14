@@ -51,7 +51,80 @@ class LogisticaPaquetesProxyController extends Controller
             ], 502);
         }
     }
+    public function vehiculos(Request $request)
+    {
+        $baseUrl = rtrim(env('MS_LOGISTICA_URL', ''), '/');
 
+        if (!$baseUrl) {
+            return response()->json([
+                'success' => false,
+                'error'   => 'MS_LOGISTICA_URL no está configurado',
+            ], 500);
+        }
+
+        $targetUrl = $baseUrl . '/api/trazabilidad/vehiculos/placas';
+        \Log::info('Gateway → Logistica URL objetivo', [
+            'base'  => $baseUrl,
+            'full'  => $targetUrl,
+        ]);
+        $started   = microtime(true);
+
+        try {
+            $response = Http::timeout(10)
+                ->withHeaders($this->forwardedHeaders($request))
+                ->get($targetUrl, $request->query());
+
+            $this->storeLog('placas', $request, $response, $targetUrl, $started);
+
+            return response($response->body(), $response->status())
+                ->header('Content-Type', $response->header('Content-Type', 'application/json'));
+
+        } catch (\Throwable $e) {
+            $this->storeException('placas', $request, $e, $targetUrl, $started);
+
+            return response()->json([
+                'success' => false,
+                'error'   => 'Error al llamar a Logística',
+            ], 502);
+        }
+    }
+    public function codigosSolicitud(Request $request)
+    {
+        $baseUrl = rtrim(env('MS_LOGISTICA_URL', ''), '/');
+
+        if (!$baseUrl) {
+            return response()->json([
+                'success' => false,
+                'error'   => 'MS_LOGISTICA_URL no está configurado',
+            ], 500);
+        }
+
+        $targetUrl = $baseUrl . '/api/trazabilidad/solicitudes/codigos';
+        \Log::info('Gateway → Logistica URL objetivo', [
+            'base'  => $baseUrl,
+            'full'  => $targetUrl,
+        ]);
+        $started   = microtime(true);
+
+        try {
+            $response = Http::timeout(10)
+                ->withHeaders($this->forwardedHeaders($request))
+                ->get($targetUrl, $request->query());
+
+            $this->storeLog('codigos', $request, $response, $targetUrl, $started);
+
+            return response($response->body(), $response->status())
+                ->header('Content-Type', $response->header('Content-Type', 'application/json'));
+
+        } catch (\Throwable $e) {
+            $this->storeException('codigos', $request, $e, $targetUrl, $started);
+
+            return response()->json([
+                'success' => false,
+                'error'   => 'Error al llamar a Logística',
+            ], 502);
+        }
+    }
     public function armar(Request $request, int $id)
     {
         $baseUrl = rtrim(env('MS_LOGISTICA_URL', ''), '/');

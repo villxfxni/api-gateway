@@ -46,6 +46,39 @@ class RescateReleasesProxyController extends Controller
             ], 502);
         }
     }
+    public function especies(Request $request)
+    {
+        $baseUrl = rtrim(env('MS_ANIMALES_URL', ''), '/');
+
+        if (!$baseUrl) {
+            return response()->json([
+                'success' => false,
+                'error'   => 'MS_ANIMALES_URL no está configurado',
+            ], 500);
+        }
+
+        $targetUrl = $baseUrl . '/api/species';
+        $started   = microtime(true);
+
+        try {
+            $response = Http::timeout(10)
+                ->withHeaders($this->forwardedHeaders($request))
+                ->get($targetUrl, $request->query());
+
+            $this->storeLog('especies', $request, $response, $targetUrl, $started);
+
+            return response($response->body(), $response->status())
+                ->header('Content-Type', $response->header('Content-Type', 'application/json'));
+
+        } catch (\Throwable $e) {
+            $this->storeException('especies', $request, $e, $targetUrl, $started);
+
+            return response()->json([
+                'success' => false,
+                'error'   => 'Error al llamar a Rescate de Animales',
+            ], 502);
+        }
+    }
 
     protected function forwardedHeaders(Request $request): array
     {
