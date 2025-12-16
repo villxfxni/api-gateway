@@ -82,5 +82,19 @@ class TrazabilidadController extends Controller
             ],
         ]);
     }
+    public function getAllCisMerged()
+    {
+        $client = new MicroserviceClient();
 
+        $cis = $client->fetchAllCisAcrossServices();
+
+        return response()->json([
+            'success' => true,
+            'total'   => count($cis),
+            'lista_ci'=> $cis,
+        ]);
+    }
+
+
+    
 }

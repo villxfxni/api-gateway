@@ -318,5 +318,56 @@ class MicroserviceClient
     ];
 }
 
+   
+   
+   public function fetchAllCisAcrossServices(): array
+    {
+        $results = [];
+        $seen = [];
+
+        foreach ($this->services as $serviceName => $envVar) {
+            $url = env($envVar);
+
+            if (!$url) {
+                logger()->warning("RUTA PARA {$envVar} NO EXISTE");
+                continue;
+            }
+
+            $fullUrl = rtrim($url, '/') . '/api/users/ci';
+
+            try {
+                $response = Http::timeout(10)->get($fullUrl);
+
+                if (!$response->successful()) {
+                    logger()->warning("CI list failed on {$serviceName} ({$response->status()}) {$fullUrl}");
+                    continue;
+                }
+
+                $data = $response->json();
+
+                $lista = [];
+                if (is_array($data) && isset($data['lista_ci']) && is_array($data['lista_ci'])) {
+                    $lista = $data['lista_ci'];
+                } elseif (is_array($data)) {
+                    $lista = $data;
+                }
+
+                foreach ($lista as $ci) {
+                    $ciKey = trim((string)$ci);
+                    if ($ciKey === '') continue;
+
+                    if (!isset($seen[$ciKey])) {
+                        $seen[$ciKey] = true;
+                        $results[] = $ciKey;
+                    }
+                }
+            } catch (\Throwable $e) {
+                logger()->warning("Busqueda de CI fallo en {$serviceName}: {$e->getMessage()} | URL: {$fullUrl}");
+                continue;
+            }
+        }
+
+        return $results;
+    }
 
 }
